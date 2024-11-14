@@ -13,6 +13,9 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.user.username}: {self.content[:30]}..."
+    
+    def like_count(self):
+        return self.likes.count()
 
 
 class Follow(models.Model):

@@ -1,13 +1,13 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
  
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .models import Post, User
+from .models import Post, User, Like, Follow
 
 
 
@@ -26,7 +26,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("all_posts"))
         else:
             return render(request, "network/login.html", {
                 "message": "Invalid username and/or password."
@@ -79,8 +79,10 @@ def create_post(request):
 
 def all_posts(request):
     posts = Post.objects.all().order_by("-timestamp")
+    liked_posts = [post.id for post in posts if post.likes.filter(user=request.user).exists()]
     return render(request, "network/all_posts.html", {
-        "posts": posts
+        "posts": posts,
+        "liked_posts": liked_posts,
     })
 
 @csrf_exempt
@@ -100,5 +102,67 @@ def edit_post(request, post_id):
             return JsonResponse({"message": "Post updated successfully."}, status=200)
         else:
             return JsonResponse({"error": "Content cannot be empty."}, status=400)
+
+    return JsonResponse({"error": "Invalid request method."}, status=400)
+
+@csrf_exempt
+@login_required
+def like_post(request, post_id):
+    try:
+        post = Post.objects.get(pk=post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({"error": "Post not found."}, status=404)
+
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        if data.get("action") == "like":
+            Like.objects.get_or_create(user=request.user, post=post)
+        elif data.get("action") == "unlike":
+            Like.objects.filter(user=request.user, post=post).delete()
+        else:
+            return JsonResponse({"error": "Invalid action."}, status=400)
+
+        return JsonResponse({"message": "Action successful.", "like_count": post.like_count()}, status=200)
+
+    return JsonResponse({"error": "Invalid request method."}, status=400)
+
+
+@login_required
+def profile(request, user_id):
+    user_profile = get_object_or_404(User, pk=user_id)
+    posts = user_profile.posts.all().order_by("-timestamp")
+    followers_count = user_profile.followers.count()
+    following_count = user_profile.following.count()
+
+    # Check if the logged-in user is following this profile
+    is_following = Follow.objects.filter(user=request.user, followed_user=user_profile).exists()
+
+    return render(request, "network/profile.html", {
+        "user_profile": user_profile,
+        "posts": posts,
+        "followers_count": followers_count,
+        "following_count": following_count,
+        "is_following": is_following
+    })
+
+@csrf_exempt
+@login_required
+def follow_user(request, user_id):
+    try:
+        user_to_follow = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found."}, status=404)
+
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        if data.get("action") == "follow":
+            if user_to_follow != request.user:
+                Follow.objects.get_or_create(user=request.user, followed_user=user_to_follow)
+        elif data.get("action") == "unfollow":
+            Follow.objects.filter(user=request.user, followed_user=user_to_follow).delete()
+        else:
+            return JsonResponse({"error": "Invalid action."}, status=400)
+
+        return JsonResponse({"message": "Action successful."}, status=200)
 
     return JsonResponse({"error": "Invalid request method."}, status=400)

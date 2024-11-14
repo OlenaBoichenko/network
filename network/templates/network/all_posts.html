@@ -10,6 +10,10 @@
                     <h5 class="card-title">{{ post.user.username }}</h5>
                     <p id="post-content-{{ post.id }}" class="card-text">{{ post.content }}</p>
                     <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
+                    <p id="like-count-{{ post.id }}" class="card-text">Likes: {{ post.like_count }}</p>
+                    <button class="btn btn-sm btn-primary like-button {% if post.id in liked_posts %}liked{% endif %}" data-post-id="{{ post.id }}">
+                        {% if post.id in liked_posts %}Unlike{% else %}Like{% endif %}
+                    </button>
                     {% if post.user == user %}
                         <button class="btn btn-sm btn-primary edit-button" data-post-id="{{ post.id }}">Edit</button>
                     {% endif %}
@@ -20,4 +24,5 @@
         <p>No posts yet.</p>
     {% endfor %}
     <script src="{% static 'network/edit_post.js' %}"></script>
+    <script src="{% static 'network/like_post.js' %}"></script>
 {% endblock %}
