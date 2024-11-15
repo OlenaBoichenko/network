@@ -1,10 +1,10 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const followButton = document.querySelector('.follow-button');
+// static/network/follow_user.js
 
-    if (followButton) {
-        followButton.onclick = () => {
-            const userId = followButton.dataset.userId;
-            const action = followButton.textContent.trim() === 'Follow' ? 'follow' : 'unfollow';
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.follow-button').forEach(button => {
+        button.onclick = () => {
+            const userId = button.dataset.userId;
+            const action = button.textContent.trim() === 'Follow' ? 'follow' : 'unfollow';
 
             fetch(`/follow/${userId}`, {
                 method: 'PUT',
@@ -18,13 +18,24 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(result => {
                 if (result.message) {
-                    followButton.textContent = action === 'follow' ? 'Unfollow' : 'Follow';
+                    // Toggle the follow button text
+                    button.textContent = action === 'follow' ? 'Unfollow' : 'Follow';
+
+                    // Update followers count
+                    const followersCountElement = document.getElementById('followers-count');
+                    let followersCount = parseInt(followersCountElement.textContent);
+                    if (action === 'follow') {
+                        followersCount += 1;
+                    } else {
+                        followersCount -= 1;
+                    }
+                    followersCountElement.textContent = followersCount;
                 } else if (result.error) {
                     alert(result.error);
                 }
             });
         };
-    }
+    });
 });
 
 function getCookie(name) {

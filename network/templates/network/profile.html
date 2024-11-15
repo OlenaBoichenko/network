@@ -3,7 +3,7 @@
 
 {% block body %}
     <h2>{{ user_profile.username }}'s Profile</h2>
-    <p>Followers: {{ followers_count }}</p>
+    <p>Followers: <span id="followers-count">{{ followers_count }}</span></p>
     <p>Following: {{ following_count }}</p>
 
     {% if user != user_profile %}

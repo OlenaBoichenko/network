@@ -12,7 +12,16 @@ from .models import Post, User, Like, Follow
 
 
 def index(request):
-    return render(request, "network/index.html")
+    posts = Post.objects.all().order_by("-timestamp")
+    liked_posts = []
+    
+    if request.user.is_authenticated:
+        liked_posts = [post.id for post in posts if post.likes.filter(user=request.user).exists()]
+
+    return render(request, "network/index.html", {
+        "posts": posts,
+        "liked_posts": liked_posts,
+    })
 
 
 def login_view(request):
@@ -135,7 +144,8 @@ def profile(request, user_id):
     following_count = user_profile.following.count()
 
     # Check if the logged-in user is following this profile
-    is_following = Follow.objects.filter(user=request.user, followed_user=user_profile).exists()
+    is_following = request.user.is_authenticated and Follow.objects.filter(user=request.user, followed_user=user_profile).exists()
+
 
     return render(request, "network/profile.html", {
         "user_profile": user_profile,
