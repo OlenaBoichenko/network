@@ -24,8 +24,9 @@
                                     <strong>{{ user.username }}</strong>
                                 </a>
                             </li>
+                            <!--link Following-->
                             <li class="nav-item">
-                                <a class="nav-link text-light" href="{% url 'following_posts' %}">Following</a> <!-- Добавили ссылку "Following" -->
+                                <a class="nav-link text-light" href="{% url 'following_posts' %}">Following</a>
                             </li>
                         {% endif %}
                         <li class="nav-item">
