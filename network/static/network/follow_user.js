@@ -1,5 +1,3 @@
-// static/network/follow_user.js
-
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.follow-button').forEach(button => {
         button.onclick = () => {
@@ -18,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(result => {
                 if (result.message) {
-                    // Toggle the follow button text
                     button.textContent = action === 'follow' ? 'Unfollow' : 'Follow';
 
                     // Update followers count

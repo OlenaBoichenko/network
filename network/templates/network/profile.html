@@ -2,30 +2,52 @@
 {% load static %}
 
 {% block body %}
-    <h2>{{ user_profile.username }}'s Profile</h2>
-    <p>Followers: <span id="followers-count">{{ followers_count }}</span></p>
-    <p>Following: {{ following_count }}</p>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <h2 class="card-title">{{ user_profile.username }}'s Profile</h2>
+                    <p class="card-text">Followers: <span id="followers-count" class="font-weight-bold">{{ followers_count }}</span></p>
+                    <p class="card-text">Following: <span class="font-weight-bold">{{ following_count }}</span></p>
 
-    {% if user != user_profile %}
-        <button class="btn btn-sm btn-primary follow-button" data-user-id="{{ user_profile.id }}">
-            {% if is_following %}Unfollow{% else %}Follow{% endif %}
-        </button>
-    {% endif %}
-
-    <h3>Posts</h3>
-    {% for post in posts %}
-        <div class="post">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">{{ post.user.username }}</h5>
-                    <p class="card-text">{{ post.content }}</p>
-                    <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
-                    <p class="card-text">Likes: {{ post.like_count }}</p>
+                    {% if user != user_profile %}
+                        <button class="btn btn-primary follow-button mt-3" data-user-id="{{ user_profile.id }}">
+                            {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                        </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
-    {% empty %}
-        <p>No posts yet.</p>
-    {% endfor %}
-    <script src="{% static 'network/follow_user.js' %}"></script>
+
+        <div class="col-md-8">
+            <h3 class="mb-4">{{ user_profile.username }}'s Posts</h3>
+            {% for post in posts %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">
+                            <a href="{% url 'profile' post.user.id %}" class="text-primary font-weight-bold">{{ post.user.username }}</a>
+                            <small class="text-muted float-right">{{ post.timestamp }}</small>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ post.content }}</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="like-section mr-3">
+                                <span id="like-count-{{ post.id }}" class="like-count">{{ post.like_count }}</span>
+                                <i class="fa fa-heart-o like-icon" data-post-id="{{ post.id }}"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="text-center text-muted">
+                    <p>No posts yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'network/follow_user.js' %}"></script>
 {% endblock %}

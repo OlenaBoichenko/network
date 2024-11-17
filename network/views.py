@@ -6,17 +6,20 @@ from django.urls import reverse
  
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 import json
 from .models import Post, User, Like, Follow
 
 
 
 def index(request):
-    posts = Post.objects.all().order_by("-timestamp")
-    liked_posts = []
-    
-    if request.user.is_authenticated:
-        liked_posts = [post.id for post in posts if post.likes.filter(user=request.user).exists()]
+    posts_list = Post.objects.all().order_by("-timestamp")
+    paginator = Paginator(posts_list, 10) 
+
+    page_number = request.GET.get('page')
+    posts = paginator.get_page(page_number)
+
+    liked_posts = [post.id for post in posts if post.likes.filter(user=request.user).exists()] if request.user.is_authenticated else []
 
     return render(request, "network/index.html", {
         "posts": posts,
@@ -87,8 +90,14 @@ def create_post(request):
 
 
 def all_posts(request):
-    posts = Post.objects.all().order_by("-timestamp")
-    liked_posts = [post.id for post in posts if post.likes.filter(user=request.user).exists()]
+    posts_list = Post.objects.all().order_by("-timestamp")
+    paginator = Paginator(posts_list, 10)  
+
+    page_number = request.GET.get('page')
+    posts = paginator.get_page(page_number)
+
+    liked_posts = [post.id for post in posts if post.likes.filter(user=request.user).exists()] if request.user.is_authenticated else []
+
     return render(request, "network/all_posts.html", {
         "posts": posts,
         "liked_posts": liked_posts,

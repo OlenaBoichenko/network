@@ -1,10 +1,8 @@
-// static/network/like_post.js
-
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.like-button').forEach(button => {
-        button.onclick = () => {
-            const postId = button.dataset.postId;
-            const action = button.classList.contains('liked') ? 'unlike' : 'like';
+    document.querySelectorAll('.like-icon').forEach(icon => {
+        icon.onclick = () => {
+            const postId = icon.dataset.postId;
+            const action = icon.classList.contains('fa-heart') ? 'unlike' : 'like';
 
             fetch(`/like_post/${postId}`, {
                 method: 'PUT',
@@ -18,13 +16,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(result => {
                 if (result.message) {
-                    // Toggle the like button appearance
-                    button.classList.toggle('liked');
-                    button.textContent = button.classList.contains('liked') ? 'Unlike' : 'Like';
-                    
+                    // Toggle the like icon
+                    if (action === 'like') {
+                        icon.classList.remove('fa-heart-o');
+                        icon.classList.add('fa-heart');
+                    } else {
+                        icon.classList.remove('fa-heart');
+                        icon.classList.add('fa-heart-o');
+                    }
+
                     // Update like count
                     const likeCount = document.querySelector(`#like-count-${postId}`);
-                    likeCount.textContent = `Likes: ${result.like_count}`;
+                    likeCount.textContent = result.like_count;
                 } else if (result.error) {
                     alert(result.error);
                 }
