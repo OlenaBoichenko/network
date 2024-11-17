@@ -185,3 +185,17 @@ def follow_user(request, user_id):
         return JsonResponse({"message": "Action successful."}, status=200)
 
     return JsonResponse({"error": "Invalid request method."}, status=400)
+
+@login_required
+def following_posts(request):
+    
+    following_users = request.user.following.values_list('followed_user', flat=True)
+    
+    posts = Post.objects.filter(user__in=following_users).order_by('-timestamp')
+
+    liked_posts = [post.id for post in posts if post.likes.filter(user=request.user).exists()]
+
+    return render(request, "network/index.html", {
+        "posts": posts,
+        "liked_posts": liked_posts,
+    })
